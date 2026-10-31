@@ -1,14 +1,20 @@
-# Pinterest Dark Mode (iOS 6 / Pinterest 3.0) — v0.3
+# Pinterest Dark Mode (iOS 6 / Pinterest 3.0) — v0.4
 
 Experimental MobileSubstrate tweak source for Pinterest's `pinterest` bundle ID, targeting ARMv7/iOS 6.
 
-## What changed from v0.2
+## What changed from v0.3
 
-v0.2 hooked both `UIView.setBackgroundColor:` and `CALayer.setBackgroundColor:`. A UIView normally forwards its background colour to its backing CALayer, so the same colour could be inverted twice and end up light again. v0.3 removes the CALayer background hook and removes overlapping tint/title-colour hooks that could also apply the transform twice.
+- Added explicit inversion for UIButton title and title-shadow colours.
+- Added UINavigationBar tint handling.
+- Added inversion of foreground-colour attributes used by UIBarButtonItem title text.
+
+## Earlier changes from v0.2
+
+v0.2 hooked both `UIView.setBackgroundColor:` and `CALayer.setBackgroundColor:`. A UIView normally forwards its background colour to its backing CALayer, so the same colour could be inverted twice and end up light again. v0.4 removes the CALayer background hook and removes overlapping tint/title-colour hooks that could also apply the transform twice.
 
 ## Behaviour and limitations
 
-- Inverts colours passed through selected UIKit setters, including view backgrounds, text colours, separators, bar backgrounds, and several controls.
+- Inverts colours passed through selected UIKit setters, including view backgrounds, label and text-entry colours, UIButton title colours, bar tint/title attributes, separators, and several controls.
 - Does not alter image pixel data, so normal Pinterest photos/pins should remain unchanged.
 - May miss colours drawn internally by UIKit, WebKit, custom drawing, or UI chrome baked into image assets.
 - This is not a full-screen pixel inversion filter and has not been independently tested on an iOS 6 device.

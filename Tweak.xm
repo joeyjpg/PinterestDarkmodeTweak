@@ -55,6 +55,16 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 }
 %end
 
+/* UIButton title colours are managed by UIButton, not UILabel setters. */
+%hook UIButton
+- (void)setTitleColor:(UIColor *)color forState:(UIControlState)state {
+    %orig(PDMInvertedColor(color), state);
+}
+- (void)setTitleShadowColor:(UIColor *)color forState:(UIControlState)state {
+    %orig(PDMInvertedColor(color), state);
+}
+%end
+
 %hook UITextField
 - (void)setTextColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
@@ -77,6 +87,9 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 - (void)setBarTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
 }
+- (void)setTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
+}
 %end
 
 %hook UIToolbar
@@ -88,6 +101,18 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 %hook UIBarButtonItem
 - (void)setTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
+}
+- (void)setTitleTextAttributes:(NSDictionary *)attributes forState:(UIControlState)state {
+    if (!attributes) {
+        %orig(attributes, state);
+        return;
+    }
+    NSMutableDictionary *changed = [attributes mutableCopy];
+    UIColor *foreground = [changed objectForKey:NSForegroundColorAttributeName];
+    if ([foreground isKindOfClass:[UIColor class]]) {
+        [changed setObject:PDMInvertedColor(foreground) forKey:NSForegroundColorAttributeName];
+    }
+    %orig(changed, state);
 }
 %end
 

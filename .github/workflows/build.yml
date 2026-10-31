@@ -1,0 +1,29 @@
+
+name: Build Pinterest Dark Mode
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Theos
+        uses: Randomblock1/theos-action@v1
+
+      - name: Build tweak
+        run: make clean package FINALPACKAGE=1
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PinterestDarkMode-deb
+          path: packages/*.deb
+          if-no-files-found: error

@@ -1,8 +1,8 @@
 Package: com.clover.pinterestdarkmode
 Name: Pinterest Dark Mode
-Version: 0.1.0
+Version: 0.2.0
 Architecture: iphoneos-arm
-Description: Selectively inverts near-neutral UIKit colours in Pinterest 3.0 for legacy iOS.
+Description: Inverts hooked UIKit and Core Animation UI colours while leaving image pixels unchanged.
 Maintainer: Clover
 Author: Clover
 Section: Tweaks

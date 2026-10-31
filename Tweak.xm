@@ -1,102 +1,149 @@
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <substrate.h>
-#import <math.h>
 
 /*
- * Pinterest 3.0 / iOS 6 dark-mode experiment.
+ * Pinterest 3.0 / iOS 6 dark-mode experiment, v0.2.
  *
- * Only near-neutral colours are inverted, so photos and colourful UI accents
- * are not intentionally touched. UIKit setters are intercepted so the app's
- * own original colours are converted at assignment time (rather than toggled
- * repeatedly during layout).
+ * Invert every colour passed through the UIKit / Core Animation setters we
+ * hook, rather than only near-neutral colours. This changes UI colours while
+ * leaving UIImage pixel data alone (ordinary photos/pins should not invert).
+ * It cannot automatically invert pixels drawn by WebKit, custom drawing, or
+ * UI chrome baked into image assets.
  */
 
-static UIColor *PDMTransformColor(UIColor *color) {
+static UIColor *PDMInvertedColor(UIColor *color) {
     if (!color || color == [UIColor clearColor]) return color;
 
     CGFloat r = 0, g = 0, b = 0, a = 0;
     if (![color getRed:&r green:&g blue:&b alpha:&a]) {
         CGColorRef cg = color.CGColor;
-        if (!cg || CGColorGetNumberOfComponents(cg) < 2) return color;
-        const CGFloat *c = CGColorGetComponents(cg);
+        if (!cg) return color;
         size_t n = CGColorGetNumberOfComponents(cg);
+        const CGFloat *c = CGColorGetComponents(cg);
+        if (!c) return color;
         if (n == 2) { r = g = b = c[0]; a = c[1]; }
         else if (n >= 4) { r = c[0]; g = c[1]; b = c[2]; a = c[3]; }
         else return color;
     }
 
-    if (a < 0.02) return color;
+    return [UIColor colorWithRed:(1.0 - r)
+                           green:(1.0 - g)
+                            blue:(1.0 - b)
+                           alpha:a];
+}
 
-    CGFloat hi = fmax(r, fmax(g, b));
-    CGFloat lo = fmin(r, fmin(g, b));
-    CGFloat spread = hi - lo;
-
-    // Keep saturated colours. The 0.20 tolerance includes slightly tinted
-    // greys/off-whites, while leaving most colourful artwork and accents alone.
-    if (spread > 0.20) return color;
-
-    // Avoid changing very faint translucent overlays.
-    CGFloat nr = 1.0 - r;
-    CGFloat ng = 1.0 - g;
-    CGFloat nb = 1.0 - b;
-
-    return [UIColor colorWithRed:nr green:ng blue:nb alpha:a];
+static CGColorRef PDMInvertedCGColor(CGColorRef color) {
+    if (!color) return color;
+    UIColor *source = [UIColor colorWithCGColor:color];
+    return PDMInvertedColor(source).CGColor;
 }
 
 %hook UIView
 - (void)setBackgroundColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
+}
+- (void)setTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UILabel
 - (void)setTextColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UITextField
 - (void)setTextColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UITextView
 - (void)setTextColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
+}
+%end
+
+%hook UIButton
+- (void)setTitleColor:(UIColor *)color forState:(UIControlState)state {
+    %orig(PDMInvertedColor(color), state);
+}
+- (void)setTitleShadowColor:(UIColor *)color forState:(UIControlState)state {
+    %orig(PDMInvertedColor(color), state);
 }
 %end
 
 %hook UITableView
 - (void)setSeparatorColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UINavigationBar
 - (void)setTintColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
+}
+- (void)setBarTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UIToolbar
 - (void)setTintColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
+}
+- (void)setBarTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
+}
+%end
+
+%hook UIBarButtonItem
+- (void)setTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UIProgressView
 - (void)setProgressTintColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
 }
 - (void)setTrackTintColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UISwitch
 - (void)setOnTintColor:(UIColor *)color {
-    %orig(PDMTransformColor(color));
+    %orig(PDMInvertedColor(color));
+}
+%end
+
+%hook UISegmentedControl
+- (void)setTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
+}
+%end
+
+%hook UIPageControl
+- (void)setPageIndicatorTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
+}
+- (void)setCurrentPageIndicatorTintColor:(UIColor *)color {
+    %orig(PDMInvertedColor(color));
+}
+%end
+
+%hook CALayer
+- (void)setBackgroundColor:(CGColorRef)color {
+    %orig(PDMInvertedCGColor(color));
+}
+- (void)setBorderColor:(CGColorRef)color {
+    %orig(PDMInvertedCGColor(color));
+}
+- (void)setShadowColor:(CGColorRef)color {
+    %orig(PDMInvertedCGColor(color));
 }
 %end

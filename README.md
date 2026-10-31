@@ -1,24 +1,7 @@
-# Pinterest Dark Mode (iOS 6 / Pinterest 3.0) — v0.4
+# Pinterest Dark Mode Tweak v0.5
 
-Experimental MobileSubstrate tweak source for Pinterest's `pinterest` bundle ID, targeting ARMv7/iOS 6.
+This version is based on v0.3, with the text-colour hooks removed. It retains the existing inversion of view backgrounds, tint colours, table separators, navigation/tool bars, bar button tint, progress controls, switches, segmented controls, page controls, and CALayer border/shadow colours.
 
-## What changed from v0.3
+The tweak does not intentionally modify UILabel, UITextField, or UITextView text colours. This should keep ordinary UIKit text in its original colour while retaining the v0.3 treatment of other hooked UI colours. Text rendered through custom drawing, attributed strings, or WebKit may still be affected if its colour is supplied through a hooked non-text setter; no general guarantee is possible for every rendering path.
 
-- Added explicit inversion for UIButton title and title-shadow colours.
-- Added UINavigationBar tint handling.
-- Added inversion of foreground-colour attributes used by UIBarButtonItem title text.
-
-## Earlier changes from v0.2
-
-v0.2 hooked both `UIView.setBackgroundColor:` and `CALayer.setBackgroundColor:`. A UIView normally forwards its background colour to its backing CALayer, so the same colour could be inverted twice and end up light again. v0.4 removes the CALayer background hook and removes overlapping tint/title-colour hooks that could also apply the transform twice.
-
-## Behaviour and limitations
-
-- Inverts colours passed through selected UIKit setters, including view backgrounds, label and text-entry colours, UIButton title colours, bar tint/title attributes, separators, and several controls.
-- Does not alter image pixel data, so normal Pinterest photos/pins should remain unchanged.
-- May miss colours drawn internally by UIKit, WebKit, custom drawing, or UI chrome baked into image assets.
-- This is not a full-screen pixel inversion filter and has not been independently tested on an iOS 6 device.
-
-## Build
-
-Run `make clean package FINALPACKAGE=1` in a compatible Theos environment. The package depends on MobileSubstrate.
+Build with the existing GitHub Actions workflow. This source has not been tested on-device.

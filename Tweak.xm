@@ -4,7 +4,7 @@
 #import <substrate.h>
 
 /*
- * Pinterest 3.0 / iOS 6 dark-mode experiment, v0.3.
+ * Pinterest 3.0 / iOS 6 dark-mode experiment, v0.5.
  *
  * Invert every colour passed through the UIKit / Core Animation setters we
  * hook, rather than only near-neutral colours. This changes UI colours while
@@ -49,33 +49,8 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 }
 %end
 
-%hook UILabel
-- (void)setTextColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
-%end
 
-/* UIButton title colours are managed by UIButton, not UILabel setters. */
-%hook UIButton
-- (void)setTitleColor:(UIColor *)color forState:(UIControlState)state {
-    %orig(PDMInvertedColor(color), state);
-}
-- (void)setTitleShadowColor:(UIColor *)color forState:(UIControlState)state {
-    %orig(PDMInvertedColor(color), state);
-}
-%end
 
-%hook UITextField
-- (void)setTextColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
-%end
-
-%hook UITextView
-- (void)setTextColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
-%end
 
 %hook UITableView
 - (void)setSeparatorColor:(UIColor *)color {
@@ -85,9 +60,6 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 
 %hook UINavigationBar
 - (void)setBarTintColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
-- (void)setTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
 }
 %end
@@ -101,18 +73,6 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 %hook UIBarButtonItem
 - (void)setTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
-}
-- (void)setTitleTextAttributes:(NSDictionary *)attributes forState:(UIControlState)state {
-    if (!attributes) {
-        %orig(attributes, state);
-        return;
-    }
-    NSMutableDictionary *changed = [attributes mutableCopy];
-    UIColor *foreground = [changed objectForKey:NSForegroundColorAttributeName];
-    if ([foreground isKindOfClass:[UIColor class]]) {
-        [changed setObject:PDMInvertedColor(foreground) forKey:NSForegroundColorAttributeName];
-    }
-    %orig(changed, state);
 }
 %end
 

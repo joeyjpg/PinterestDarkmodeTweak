@@ -1,17 +1,18 @@
-# Pinterest Dark Mode (iOS 6 / Pinterest 3.0)
+# Pinterest Dark Mode (iOS 6 / Pinterest 3.0) — v0.3
 
-Experimental MobileSubstrate tweak source. Version 0.2 inverts every colour passed through the hooked UIKit and Core Animation setters, rather than limiting inversion to near-neutral colours.
+Experimental MobileSubstrate tweak source for Pinterest's `pinterest` bundle ID, targeting ARMv7/iOS 6.
 
-## Expected behaviour
+## What changed from v0.2
 
-- White/black/grey and coloured UI elements handled by the hooked setters have their RGB colours inverted.
-- Normal image pixel data is not modified, so photos and Pinterest pins should remain as they were.
-- Template images/icons that use a tint colour may change because their tint is a UI colour.
+v0.2 hooked both `UIView.setBackgroundColor:` and `CALayer.setBackgroundColor:`. A UIView normally forwards its background colour to its backing CALayer, so the same colour could be inverted twice and end up light again. v0.3 removes the CALayer background hook and removes overlapping tint/title-colour hooks that could also apply the transform twice.
 
-## Limitations
+## Behaviour and limitations
 
-This is still a selective setter-hook approach, not a true display-wide inversion filter. It may miss colours rendered internally by UIKit, WebKit/web views, custom drawing, or UI chrome baked into image assets. Some UI colours may also be assigned more than once, so test it on-device. It has not been independently tested on an iOS 6 device.
+- Inverts colours passed through selected UIKit setters, including view backgrounds, text colours, separators, bar backgrounds, and several controls.
+- Does not alter image pixel data, so normal Pinterest photos/pins should remain unchanged.
+- May miss colours drawn internally by UIKit, WebKit, custom drawing, or UI chrome baked into image assets.
+- This is not a full-screen pixel inversion filter and has not been independently tested on an iOS 6 device.
 
 ## Build
 
-Build with Theos on a compatible tweak build environment using `make package`. The filter targets bundle identifier `pinterest` and the build targets ARMv7/iOS 6.
+Run `make clean package FINALPACKAGE=1` in a compatible Theos environment. The package depends on MobileSubstrate.

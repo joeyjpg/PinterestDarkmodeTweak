@@ -4,7 +4,7 @@
 #import <substrate.h>
 
 /*
- * Pinterest 3.0 / iOS 6 dark-mode experiment, v0.2.
+ * Pinterest 3.0 / iOS 6 dark-mode experiment, v0.3.
  *
  * Invert every colour passed through the UIKit / Core Animation setters we
  * hook, rather than only near-neutral colours. This changes UI colours while
@@ -67,15 +67,6 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 }
 %end
 
-%hook UIButton
-- (void)setTitleColor:(UIColor *)color forState:(UIControlState)state {
-    %orig(PDMInvertedColor(color), state);
-}
-- (void)setTitleShadowColor:(UIColor *)color forState:(UIControlState)state {
-    %orig(PDMInvertedColor(color), state);
-}
-%end
-
 %hook UITableView
 - (void)setSeparatorColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
@@ -83,18 +74,12 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 %end
 
 %hook UINavigationBar
-- (void)setTintColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
 - (void)setBarTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
 }
 %end
 
 %hook UIToolbar
-- (void)setTintColor:(UIColor *)color {
-    %orig(PDMInvertedColor(color));
-}
 - (void)setBarTintColor:(UIColor *)color {
     %orig(PDMInvertedColor(color));
 }
@@ -137,9 +122,8 @@ static CGColorRef PDMInvertedCGColor(CGColorRef color) {
 %end
 
 %hook CALayer
-- (void)setBackgroundColor:(CGColorRef)color {
-    %orig(PDMInvertedCGColor(color));
-}
+/* Do not hook setBackgroundColor here: UIView's setter normally forwards to
+ * its backing layer, which would invert the same background twice. */
 - (void)setBorderColor:(CGColorRef)color {
     %orig(PDMInvertedCGColor(color));
 }
